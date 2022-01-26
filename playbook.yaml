@@ -1,0 +1,31 @@
+- name: 'Configure kiosks'
+  hosts: kiosks 
+  tasks:
+  - name: Install Packages
+    become: true
+    register: updatesys
+    apt:
+      update_cache: yes
+      name:
+      - xserver-xorg-video-all
+      - xserver-xorg-input-all
+      - xserver-xorg-core
+      - xinit
+      - x11-xserver-utils
+      - chromium-browser
+      - unclutter
+  - name: enable console auto login
+    become: true
+    shell: raspi-config nonint do_boot_behaviour "B2"
+  - name: Check autologin 
+    command: sudo raspi-config nonint get_autologin 
+    register: logval
+  - debug: msg="{{ logval.stdout }}"
+  - name: 'Copy bash_profile'
+    ansible.builtin.copy: 
+      src: ./.bash_profile
+      dest: /home/pi/.bash_profile
+  - name: 'Copy xinitrc'
+    ansible.builtin.copy: 
+      src: ./.xinitrc
+      dest: /home/pi/.xinitrc
